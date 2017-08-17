@@ -16,12 +16,12 @@
         <!-- Forecast -->
         <div class="forecast">
             <div class="forecast-icon">
-                <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="New York Weather Widget">
+                <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="{{cityWeahter[0].name}}">
             </div>
             <div class="today-weather">
                 <h3>{{cityWeahter[0].weather[0]?.description}}</h3>
                 <ul>
-                    <li *ngFor="let city of cityWeahter; let i = index" [ngClass]="{'hidden': i > 6}">
+                    <li *ngFor="let city of cityWeahter; let i = index">
                         {{city.date}} <span> {{city.main.temp}}°C</span>
                     </li>
                 </ul>

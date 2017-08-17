@@ -42,6 +42,8 @@ export class HomeComponent implements OnInit {
       for(let i = 0; i < this.weatherInfo.length; i++){
         if ( result.name === this.weatherInfo[i][0].name ){
           this.weatherInfo[i].unshift(result);
+          // shows only last 7 in the view
+          this.weatherInfo[i] = this.weatherInfo[i].slice(0,7)
           verify = 1;
           break;
         }
