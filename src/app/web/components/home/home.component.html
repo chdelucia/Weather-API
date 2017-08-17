@@ -1,0 +1,37 @@
+<section *ngIf="weatherInfo.length; else loading">
+    <div *ngFor="let cityWeahter of weatherInfo" class="container">
+        <div class="city {{cityWeahter[0].sys.country}}">
+            <div class="title">
+                <h2>{{cityWeahter[0].name}}</h2>
+                <h3>{{cityWeahter[0].sys.country}}</h3>
+            </div>
+            <div class="date-time">
+                <div class="temperature">
+                    <p>{{cityWeahter[0].main.temp}}°<span>C</span></p>
+                </div>
+                <div class="clear"></div>
+            </div>
+        </div>
+
+        <!-- Forecast -->
+        <div class="forecast">
+            <div class="forecast-icon">
+                <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="New York Weather Widget">
+            </div>
+            <div class="today-weather">
+                <h3>{{cityWeahter[0].weather[0]?.description}}</h3>
+                <ul>
+                    <li *ngFor="let city of cityWeahter; let i = index" [ngClass]="{'hidden': i > 6}">
+                        {{city.date}} <span> {{city.main.temp}}°C</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- //Forecast -->
+        <div class="clear"></div>
+    </div>
+</section>
+
+<ng-template #loading>
+    <div class="loading">Cargando resultados espere porfavor</div>
+</ng-template>
