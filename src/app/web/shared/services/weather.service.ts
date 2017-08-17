@@ -31,7 +31,7 @@ export class WeatherService {
         }
         else {
             temperatures = this.getCityLocalStorage(weatherObject.name);
-            temperatures.push(weatherObject);
+            temperatures.unshift(weatherObject);
             localStorage[weatherObject.name] = JSON.stringify(temperatures);
         }
         return weatherObject;

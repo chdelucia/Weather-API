@@ -41,7 +41,7 @@ export class HomeComponent implements OnInit {
       let verify = 0;
       for(let i = 0; i < this.weatherInfo.length; i++){
         if ( result.name === this.weatherInfo[i][0].name ){
-          this.weatherInfo[i].push(result);
+          this.weatherInfo[i].unshift(result);
           verify = 1;
           break;
         }
