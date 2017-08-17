@@ -696,7 +696,7 @@ import { Observable }                                   from &#x27;rxjs/Observab
 import &#x27;rxjs/Rx&#x27;;
 
 import { environment }                                  from &#x27;./../../../../environments/environment&#x27;;
-import { WeatherObject }                                from &#x27;./../models/weather&#x27;;
+import { WeatherObject }                                from &#x27;./weather&#x27;;
 import * as moment                                      from &#x27;moment-timezone&#x27;;
 
 @Injectable()
@@ -722,7 +722,7 @@ export class WeatherService {
         }
         else {
             temperatures &#x3D; this.getCityLocalStorage(weatherObject.name);
-            temperatures.push(weatherObject);
+            temperatures.unshift(weatherObject);
             localStorage[weatherObject.name] &#x3D; JSON.stringify(temperatures);
         }
         return weatherObject;

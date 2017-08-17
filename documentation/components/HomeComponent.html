@@ -628,7 +628,7 @@
     
                             <tr>
                                 <td class="col-md-4">
-                                    <div class="io-line">Defined in <a href="" data-line="55" class="link-to-prism">src/app/web/components/home/home.component.ts:55</a></div>
+                                    <div class="io-line">Defined in <a href="" data-line="57" class="link-to-prism">src/app/web/components/home/home.component.ts:57</a></div>
                                 </td>
                             </tr>
     
@@ -715,7 +715,7 @@
 import { WeatherService }                     from &#x27;./../../shared/services/weather.service&#x27;;
 import { Observable }                         from &#x27;rxjs/Observable&#x27;;
 import { environment }                        from &#x27;./../../../../environments/environment&#x27;;
-import { WeatherObject }                      from &#x27;./../../shared/models/weather&#x27;;
+import { WeatherObject }                      from &#x27;./../../shared/services/weather&#x27;;
 
 @Component({
   selector: &#x27;app-home&#x27;,
@@ -753,7 +753,9 @@ export class HomeComponent implements OnInit {
       let verify &#x3D; 0;
       for(let i &#x3D; 0; i &lt; this.weatherInfo.length; i++){
         if ( result.name &#x3D;&#x3D;&#x3D; this.weatherInfo[i][0].name ){
-          this.weatherInfo[i].push(result);
+          this.weatherInfo[i].unshift(result);
+          // shows only last 7 in the view
+          this.weatherInfo[i] &#x3D; this.weatherInfo[i].slice(0,7)
           verify &#x3D; 1;
           break;
         }
@@ -778,37 +780,43 @@ export class HomeComponent implements OnInit {
     </div>
 
     <div class="tab-pane fade" id="templateData">
-        <pre class="line-numbers"><code class="language-html">&lt;div *ngFor&#x3D;&quot;let cityWeahter of weatherInfo&quot; class&#x3D;&quot;container&quot;&gt;
-    &lt;div class&#x3D;&quot;city {{cityWeahter[0].sys.country}}&quot;&gt;
-        &lt;div class&#x3D;&quot;title&quot;&gt;
-            &lt;h2&gt;{{cityWeahter[0].name}}&lt;/h2&gt;
-            &lt;h3&gt;{{cityWeahter[0].sys.country}}&lt;/h3&gt;
-        &lt;/div&gt;
-        &lt;div class&#x3D;&quot;date-time&quot;&gt;
-            &lt;div class&#x3D;&quot;temperature&quot;&gt;
-                &lt;p&gt;{{cityWeahter[0].main.temp}}°&lt;span&gt;C&lt;/span&gt;&lt;/p&gt;
+        <pre class="line-numbers"><code class="language-html">&lt;section *ngIf&#x3D;&quot;weatherInfo.length; else loading&quot;&gt;
+    &lt;div *ngFor&#x3D;&quot;let cityWeahter of weatherInfo&quot; class&#x3D;&quot;container&quot;&gt;
+        &lt;div class&#x3D;&quot;city {{cityWeahter[0].sys.country}}&quot;&gt;
+            &lt;div class&#x3D;&quot;title&quot;&gt;
+                &lt;h2&gt;{{cityWeahter[0].name}}&lt;/h2&gt;
+                &lt;h3&gt;{{cityWeahter[0].sys.country}}&lt;/h3&gt;
             &lt;/div&gt;
-            &lt;div class&#x3D;&quot;clear&quot;&gt;&lt;/div&gt;
+            &lt;div class&#x3D;&quot;date-time&quot;&gt;
+                &lt;div class&#x3D;&quot;temperature&quot;&gt;
+                    &lt;p&gt;{{cityWeahter[0].main.temp}}°&lt;span&gt;C&lt;/span&gt;&lt;/p&gt;
+                &lt;/div&gt;
+                &lt;div class&#x3D;&quot;clear&quot;&gt;&lt;/div&gt;
+            &lt;/div&gt;
         &lt;/div&gt;
-    &lt;/div&gt;
 
-    &lt;!-- Forecast --&gt;
-    &lt;div class&#x3D;&quot;forecast&quot;&gt;
-        &lt;div class&#x3D;&quot;forecast-icon&quot;&gt;
-            &lt;img src&#x3D;&quot;http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png&quot; alt&#x3D;&quot;New York Weather Widget&quot;&gt;
+        &lt;!-- Forecast --&gt;
+        &lt;div class&#x3D;&quot;forecast&quot;&gt;
+            &lt;div class&#x3D;&quot;forecast-icon&quot;&gt;
+                &lt;img src&#x3D;&quot;http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png&quot; alt&#x3D;&quot;{{cityWeahter[0].name}}&quot;&gt;
+            &lt;/div&gt;
+            &lt;div class&#x3D;&quot;today-weather&quot;&gt;
+                &lt;h3&gt;{{cityWeahter[0].weather[0]?.description}}&lt;/h3&gt;
+                &lt;ul&gt;
+                    &lt;li *ngFor&#x3D;&quot;let city of cityWeahter; let i &#x3D; index&quot;&gt;
+                        {{city.date}} &lt;span&gt; {{city.main.temp}}°C&lt;/span&gt;
+                    &lt;/li&gt;
+                &lt;/ul&gt;
+            &lt;/div&gt;
         &lt;/div&gt;
-        &lt;div class&#x3D;&quot;today-weather&quot;&gt;
-            &lt;h3&gt;{{cityWeahter[0].weather[0]?.description}}&lt;/h3&gt;
-            &lt;ul&gt;
-                &lt;li *ngFor&#x3D;&quot;let city of cityWeahter; let i &#x3D; index&quot; [ngClass]&#x3D;&quot;{&#x27;hidden&#x27;: i &gt; 6}&quot;&gt;
-                    {{city.date}} &lt;span&gt; {{city.main.temp}}°C&lt;/span&gt;
-                &lt;/li&gt;
-            &lt;/ul&gt;
-        &lt;/div&gt;
+        &lt;!-- //Forecast --&gt;
+        &lt;div class&#x3D;&quot;clear&quot;&gt;&lt;/div&gt;
     &lt;/div&gt;
-    &lt;!-- //Forecast --&gt;
-    &lt;div class&#x3D;&quot;clear&quot;&gt;&lt;/div&gt;
-&lt;/div&gt;</code></pre>
+&lt;/section&gt;
+
+&lt;ng-template #loading&gt;
+    &lt;div class&#x3D;&quot;loading&quot;&gt;Cargando resultados espere porfavor&lt;/div&gt;
+&lt;/ng-template&gt;</code></pre>
     </div>
 
     <div class="tab-pane fade" id="tree">
@@ -834,7 +842,7 @@ export class HomeComponent implements OnInit {
 <script src="../js/libs/htmlparser.js"></script>
 <script src="../js/libs/deep-iterator.js"></script>
 <script>
-        var COMPONENT_TEMPLATE = '<div><div *ngFor="let cityWeahter of weatherInfo" class="container">    <div class="city {{cityWeahter[0].sys.country}}">        <div class="title">            <h2>{{cityWeahter[0].name}}</h2>            <h3>{{cityWeahter[0].sys.country}}</h3>        </div>        <div class="date-time">            <div class="temperature">                <p>{{cityWeahter[0].main.temp}}°<span>C</span></p>            </div>            <div class="clear"></div>        </div>    </div>    <!-- Forecast -->    <div class="forecast">        <div class="forecast-icon">            <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="New York Weather Widget">        </div>        <div class="today-weather">            <h3>{{cityWeahter[0].weather[0]?.description}}</h3>            <ul>                <li *ngFor="let city of cityWeahter; let i = index" [ngClass]="{\'hidden\': i > 6}">                    {{city.date}} <span> {{city.main.temp}}°C</span>                </li>            </ul>        </div>    </div>    <!-- //Forecast -->    <div class="clear"></div></div></div>'
+        var COMPONENT_TEMPLATE = '<div><section *ngIf="weatherInfo.length; else loading">    <div *ngFor="let cityWeahter of weatherInfo" class="container">        <div class="city {{cityWeahter[0].sys.country}}">            <div class="title">                <h2>{{cityWeahter[0].name}}</h2>                <h3>{{cityWeahter[0].sys.country}}</h3>            </div>            <div class="date-time">                <div class="temperature">                    <p>{{cityWeahter[0].main.temp}}°<span>C</span></p>                </div>                <div class="clear"></div>            </div>        </div>        <!-- Forecast -->        <div class="forecast">            <div class="forecast-icon">                <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="{{cityWeahter[0].name}}">            </div>            <div class="today-weather">                <h3>{{cityWeahter[0].weather[0]?.description}}</h3>                <ul>                    <li *ngFor="let city of cityWeahter; let i = index">                        {{city.date}} <span> {{city.main.temp}}°C</span>                    </li>                </ul>            </div>        </div>        <!-- //Forecast -->        <div class="clear"></div>    </div></section><ng-template #loading>    <div class="loading">Cargando resultados espere porfavor</div></ng-template></div>'
     var COMPONENTS = [{'name': 'AppComponent', 'selector': 'app-root'},{'name': 'HomeComponent', 'selector': 'app-home'},{'name': 'PageNotFoundComponent', 'selector': 'app-page-not-found'}];
     var DIRECTIVES = [];
     var ACTUAL_COMPONENT = {'name': 'HomeComponent'};
