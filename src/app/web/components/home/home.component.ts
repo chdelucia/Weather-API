@@ -1,66 +1,81 @@
-import { Component, OnInit, ViewChild }       from '@angular/core';
-
-import { WeatherService }                     from './../../shared/services/weather.service';
-import { Observable }                         from 'rxjs/Observable';
-import { environment }                        from './../../../../environments/environment';
-import { WeatherObject }                      from './../../shared/services/weather';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { WeatherService } from '../../shared/services/weather.service';
+import { environment } from '../../../../environments/environment';
+import { WeatherObject } from '../../shared/services/weather';
+import { Subscription, interval } from 'rxjs';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.less'],
+  styleUrls: ['./home.component.less']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  private weather = inject(WeatherService);
+  private timerSub?: Subscription;
 
-  weatherInfo = [];
+  readonly weatherInfo = signal<WeatherObject[][]>([]);
 
-  constructor( private weather: WeatherService) { }
-    
-  ngOnInit() {
+  ngOnInit(): void {
     this.recoverDataFromStorage();
     this.getWeathers();
-    Observable.interval(environment.refreshTime).subscribe(x => {
+    this.timerSub = interval(environment.refreshTime).subscribe(() => {
       this.getWeathers();
     });
   }
 
-  getWeathers(){
-    environment.cities.map( city => {
-      this.weather.getWeatheritemsbyCity(city).subscribe( 
-        result => {
-          this.renderCityData(result);
-      })
-    })
+  ngOnDestroy(): void {
+    this.timerSub?.unsubscribe();
   }
 
+  getWeathers(): void {
+    environment.cities.map(city => {
+      this.weather.getWeatheritemsbyCity(city).subscribe(result => {
+        this.renderCityData(result);
+      });
+    });
+  }
 
   /*
   * Add temperature to city or create new city if not exist yet. weatherInfo = [ [city1..{},{}] , [city2] , [city3] ]
   */
-  renderCityData(result:WeatherObject){ 
-      let verify = 0;
-      for(let i = 0; i < this.weatherInfo.length; i++){
-        if ( result.name === this.weatherInfo[i][0].name ){
-          this.weatherInfo[i].unshift(result);
+  renderCityData(result: WeatherObject): void {
+    this.weatherInfo.update(currentInfo => {
+      const updatedInfo = currentInfo.map(cityArray => [...cityArray]);
+      let verify = false;
+
+      for (let i = 0; i < updatedInfo.length; i++) {
+        if (updatedInfo[i][0] && result.name === updatedInfo[i][0].name) {
+          updatedInfo[i].unshift(result);
           // shows only last 7 in the view
-          this.weatherInfo[i] = this.weatherInfo[i].slice(0,7)
-          verify = 1;
+          updatedInfo[i] = updatedInfo[i].slice(0, 7);
+          verify = true;
           break;
         }
       }
-      if (!verify) { this.weatherInfo[this.weatherInfo.length] = [result] }
+
+      if (!verify) {
+        updatedInfo.push([result]);
+      }
+
+      return updatedInfo;
+    });
   }
 
   /*
   * Look for a previous weather temperatures if exist in Storage
   */
-  recoverDataFromStorage(){
-    environment.cities.map( city => {
+  recoverDataFromStorage(): void {
+    const initialData: WeatherObject[][] = [];
+    environment.cities.forEach(city => {
       if (localStorage.getItem(city) !== null) {
-        this.weatherInfo.push(this.weather.getCityLocalStorage(city));
+        initialData.push(this.weather.getCityLocalStorage(city));
       }
     });
+    if (initialData.length > 0) {
+      this.weatherInfo.set(initialData);
+    }
   }
-  
-
 }

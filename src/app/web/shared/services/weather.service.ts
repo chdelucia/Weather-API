@@ -1,66 +1,67 @@
-import { Injectable, Inject }                           from '@angular/core';
-import { Http, Headers, RequestOptions, RequestMethod } from '@angular/http';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, retry } from 'rxjs/operators';
+import { environment } from './../../../../environments/environment';
+import { WeatherObject } from './weather';
+import moment from 'moment-timezone';
 
-import { Observable }                                   from 'rxjs/Observable';
-import 'rxjs/Rx';
-
-import { environment }                                  from './../../../../environments/environment';
-import { WeatherObject }                                from './weather';
-import * as moment                                      from 'moment-timezone';
-
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class WeatherService {
+  private http = inject(HttpClient);
 
-    constructor(private http: Http) { }
+  getWeatheritemsbyCity(cityName: string): Observable<WeatherObject> {
+    return this.http
+      .get<WeatherObject>(
+        environment.baseUrl + 'weather?q=' + cityName + '&appid=' + environment.appId + '&units=metric'
+      )
+      .pipe(
+        retry(3),
+        map(response => this.setCityLocalStorage(cityName, response)),
+        catchError(this.handleError)
+      );
+  }
 
-    getWeatheritemsbyCity(cityName: string): Observable<WeatherObject> {
+  setCityLocalStorage(cityName: string, weatherJson: WeatherObject): WeatherObject {
+    let weatherObject = this.addCurrentDateTime(cityName, weatherJson);
+    let temperatures: WeatherObject[] = [];
 
-        return this.http.get(environment.baseUrl + 'weather?q=' + cityName + '&appid=' + environment.appId + '&units=metric')
-            .retry(3)
-            .map(response => this.setCityLocalStorage( cityName,response.json() ))
-            .catch(this.handleError);
+    if (localStorage.getItem(weatherObject.name) === null) {
+      temperatures.push(weatherObject);
+      localStorage.setItem(cityName, JSON.stringify(temperatures));
+    } else {
+      temperatures = this.getCityLocalStorage(weatherObject.name);
+      temperatures.unshift(weatherObject);
+      localStorage[weatherObject.name] = JSON.stringify(temperatures);
     }
+    return weatherObject;
+  }
 
-    setCityLocalStorage(cityName:string,weatherJson:WeatherObject) : WeatherObject {
-        let weatherObject = this.addCurrentDateTime(cityName,weatherJson);
-        let temperatures : WeatherObject[] = []; 
+  getCityLocalStorage(cityName: string): WeatherObject[] {
+    const data = localStorage.getItem(cityName);
+    return data ? JSON.parse(data) : [];
+  }
 
-        if (localStorage.getItem(weatherObject.name) === null) {
-            temperatures.push(weatherObject);
-            localStorage.setItem(cityName, JSON.stringify(temperatures));
-        }
-        else {
-            temperatures = this.getCityLocalStorage(weatherObject.name);
-            temperatures.unshift(weatherObject);
-            localStorage[weatherObject.name] = JSON.stringify(temperatures);
-        }
-        return weatherObject;
-    }
+  /*
+  * add current date Time from city timezone
+  */
+  private addCurrentDateTime(city: string, weatherObject: WeatherObject): WeatherObject {
+    let cityName = this.prepareCityNameForMoment(city);
+    weatherObject.date = moment().tz('America/' + cityName).format('HH:mm');
+    return weatherObject;
+  }
 
-    getCityLocalStorage(cityName: string): WeatherObject[] {
-            return JSON.parse(localStorage.getItem(cityName));
-    }
+  /*
+  * Remove blank space and add _ instead
+  */
+  private prepareCityNameForMoment(cityName: string): string {
+    return cityName.replace(' ', '_');
+  }
 
-
-    /*
-    * add current date Time from city timezone
-    */
-    private addCurrentDateTime(city:string, weatherObject:WeatherObject) : WeatherObject {
-        let cityName = this.prepareCityNameForMoment(city)
-        weatherObject.date = moment().tz("America/" + cityName).format('HH:mm');
-        return weatherObject;
-    }
-
-    /*
-    * Remove blank space and add _ instead
-    */
-    private prepareCityNameForMoment(cityName: string): string {
-        return cityName.replace(' ', '_');
-    }
-
-    private handleError(error: Response) {
-        console.error(error);
-        return Observable.throw(error.text || ' error');
-    }
-
+  private handleError(error: any) {
+    console.error(error);
+    return throwError(() => error?.message || ' error');
+  }
 }

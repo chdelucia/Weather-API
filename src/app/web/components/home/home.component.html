@@ -1,37 +1,39 @@
-<section *ngIf="weatherInfo.length; else loading">
-    <div *ngFor="let cityWeahter of weatherInfo" class="container">
-        <div class="city {{cityWeahter[0].sys.country}}">
-            <div class="title">
-                <h2>{{cityWeahter[0].name}}</h2>
-                <h3>{{cityWeahter[0].sys.country}}</h3>
-            </div>
-            <div class="date-time">
-                <div class="temperature">
-                    <p>{{cityWeahter[0].main.temp}}°<span>C</span></p>
+@if (weatherInfo().length) {
+    @for (cityWeahter of weatherInfo(); track $index) {
+        <div class="container">
+            <div class="city {{cityWeahter[0].sys.country}}">
+                <div class="title">
+                    <h2>{{cityWeahter[0].name}}</h2>
+                    <h3>{{cityWeahter[0].sys.country}}</h3>
                 </div>
-                <div class="clear"></div>
+                <div class="date-time">
+                    <div class="temperature">
+                        <p>{{cityWeahter[0].main.temp}}°<span>C</span></p>
+                    </div>
+                    <div class="clear"></div>
+                </div>
             </div>
-        </div>
 
-        <!-- Forecast -->
-        <div class="forecast">
-            <div class="forecast-icon">
-                <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="{{cityWeahter[0].name}}">
+            <!-- Forecast -->
+            <div class="forecast">
+                <div class="forecast-icon">
+                    <img src="http://openweathermap.org/img/w/{{cityWeahter[0].weather[0]?.icon}}.png" alt="{{cityWeahter[0].name}}">
+                </div>
+                <div class="today-weather">
+                    <h3>{{cityWeahter[0].weather[0]?.description}}</h3>
+                    <ul>
+                        @for (city of cityWeahter; track $index) {
+                            <li>
+                                {{city.date}} <span> {{city.main.temp}}°C</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
-            <div class="today-weather">
-                <h3>{{cityWeahter[0].weather[0]?.description}}</h3>
-                <ul>
-                    <li *ngFor="let city of cityWeahter; let i = index">
-                        {{city.date}} <span> {{city.main.temp}}°C</span>
-                    </li>
-                </ul>
-            </div>
+            <!-- //Forecast -->
+            <div class="clear"></div>
         </div>
-        <!-- //Forecast -->
-        <div class="clear"></div>
-    </div>
-</section>
-
-<ng-template #loading>
+    }
+} @else {
     <div class="loading">Cargando resultados espere porfavor</div>
-</ng-template>
+}
